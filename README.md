@@ -9,7 +9,7 @@ The baseball player visualizes a scatter plot. The x value of each point is the 
 - Exploration
 By dividing the data into left and right hands sub dataset, the left-hand hitting rate is concentrated at 0.26 and above, while the right-hand hitting rate is concentrated at 0.28 and below. Overall, the left-hand hitting rate is higher than the right-hand hitting rate.
 
-![image](figs/Left_Hand.jpeg)
+![image](Left_Hand.jpg)
 
 
-![image](figs/Right_Hand.jpeg)
+![image](Right_Hand.jpg)
