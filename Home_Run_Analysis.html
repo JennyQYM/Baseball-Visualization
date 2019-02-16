@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3plus.org/js/d3plus.js"></script>
+
+    <style>
+    h1{
+      text-align: center;
+    }
+    body{
+      text-align: center;
+      font: 12px sans-serif;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    .dot,.legend rect{
+      opacity: 0.4;
+    }
+    div.handedness_button{
+      position: fixed;
+      top: 100px;
+      right: 200px;
+    }
+    div.handedness_button div{
+      background-color: rgb(213, 224, 241);
+      padding: 3px;
+      margin: 7px;
+    }
+    .note{
+      color: gray;
+      font: 12px sans-serif;
+    }
+    rect {
+      opacity: 0.6;
+      fill: black;
+    }
+    </style>
+
+    <script type="text/javascript">
+      function draw(data) {
+        //set svg size
+        var margin = {top: 50, right: 80, bottom: 50, left: 50},
+        width = 1100 - margin.left - margin.right,
+        height = 620 - margin.top - margin.bottom;
+        //Set title.
+        d3.select("body")
+          .append("h1")
+          .text("The Baseball Home Run Analysis")
+        //d3.select("body")
+          //.append("h3")
+        //find range of x axis.
+        var x = d3.scale.linear()
+        .range([0, width]);
+        //find range of x axis.
+        var y = d3.scale.linear()
+        .range([height, 0]);
+        // set ellipse color range
+        var color = d3.scale.category10()
+        .range(['#e96058', '#f2d34b', '#1aefcf']);;  //category10()
+        // Create ellipse size scale
+        var rx = d3.scale.linear()
+        .range([2,20]);
+        var ry = d3.scale.linear()
+        .range([2,20]);
+        var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+        var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+        var svg = d3.select("body")
+          .append("svg")
+            .attr("width", width + margin.left+ margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        x.domain(d3.extent(data, function(d) { return d.height; })).nice();
+        y.domain(d3.extent(data, function(d) { return d.weight; })).nice();
+        //rx.domain(d3.extent(data, function(d) { return d.HR; }));
+        //ry.domain(d3.extent(data, function(d) { return d.avg; }));
+        rx.domain([0.104, 0.328]);
+        ry.domain([1, 563]);
+        debugger;
+        var handed = ["Right hand", "Left hand", "Both hand", "All"];
+
+        // set x axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+          .append("text")
+            .attr("class", "label")
+            .attr("x", width)
+            .attr("y", -6)
+            .style("text-anchor", "end")
+            .text("height ( inch )");
+        // set y axis
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+          .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("weight ( pound )")
+        // set the draw function
+        function draw_point(draw_data){
+          svg.selectAll("ellipse").remove();
+          debugger;
+          svg.selectAll(".dot")
+          .data(draw_data.sort(function(a,b){
+            //order the data set
+            return b.avg - a.avg;
+          }))
+          .enter()
+          .append("ellipse")
+          .attr("class", "dot")
+          .attr("cx", function(d){return x(d.height); })
+          .attr("cy", function(d){return y(d.weight); })
+          .attr("rx",  function(d){return rx(d.avg); })
+          .attr("ry",  function(d){return ry(d.HR); })
+          .style("fill", function(d){return color(d.handedness);})
+          .on("mouseover", handleMouseOver)
+          .on("mouseout", handleMouseOut);
+        };
+        // set the tooltip when mouse over
+        function handleMouseOver(d, i){
+          var height = "Height: " + d.height;
+          var weight = "Weight: " + d.weight;
+          var avg = "Avg: " + d.avg;
+          var HR = "HR: " + d.HR;
+          var n = "Num-of-people: " + d.n;
+          var str1 = String(height) + "\t" + String(weight);
+          var str2 = String(avg) + "\t" + String(HR);
+          var str3 = String(n);
+          d3.select(this)
+            .style("rx", function(d){return rx(d.avg)*2; })
+            .style("ry", function(d){return ry(d.HR)*2; });
+          // the format of tooltip
+          svg.append("rect")
+          .attr("id", "information1")
+          .attr("x", function(){return x(d.height)-60; })
+          .attr("y", function(){return y(d.weight)+25; })
+          .attr("width", "150")
+          .attr("height", "65");
+
+          // tooltip information
+          svg.append("text")
+          .attr("id", "information1")
+          .attr("fill", "#FFF")
+          .attr("x", function(){return x(d.height)-50; })
+          .attr("y", function(){return y(d.weight)+40; })
+          .text(str1);
+          svg.append("text")
+          .attr("id","information2")
+          .attr("fill", "#FFF")
+          .attr("x", function(){return x(d.height)-50; })
+          .attr("y", function(){return y(d.weight)+60; })
+          .text(str2);
+          svg.append("text")
+          .attr("id", "information3")
+          .attr("fill", "#FFF")
+          .attr("x", function(){return x(d.height)-50; })
+          .attr("y", function(){return y(d.weight)+80; })
+          .text(str3);
+        }
+        // delete the infomation when mouse out
+        function handleMouseOut(d, i){
+          d3.select(this)
+          .style("rx", function(d){return rx(d.avg); })
+          .style("ry", function(d){return ry(d.HR); });
+          d3.selectAll("#information1").remove();
+          d3.selectAll("#information2").remove();
+          d3.selectAll("#information3").remove();
+        }
+        //draw the ellipse
+        draw_point(data);
+        // set the legent
+        var legend = svg.selectAll(".legend")
+        .data(color.domain())
+        .enter()
+        .append("g")
+        .attr("class", "legend")
+        .attr("transform", function(d, i){return "translate(0," + i * 20 + ")"; });
+        legend.append("rect")
+            .attr("x", width + 50)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+        legend.append("text")
+            .attr("x", width + 45)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function(d) {
+              if (d == "R"){
+                return "Right hand";
+              }
+              if (d == "L") {
+                return "Left hand";
+              }
+              else {
+                return "Both hand"
+              };
+            });
+        // set the remarks
+        d3.select("body")
+          .append("div")
+          .attr("class", "note")
+          .text("Remarks：1. The elliptical horizontal radius represents the hitting rate and the vertical radius represents the total score")
+          .append("div")
+          .attr("class", "note")
+          .text("2. The darker the color, the more points that are superimposed here")
+          .append("div")
+          .attr("class", "note")
+          .text("3. People with the same height, weight and hand habits are represented by the same ellipse. The Num-of-people represents the total number of people.")
+        //add button
+        var buttons = d3.select("body")
+        .append("div")
+        .attr("class", "handedness_button")
+        .selectAll("div")
+        .data(handed)
+        .enter()
+        .append("div")
+        .text(function(d){
+          return d;
+        });
+        // set the click action
+        buttons.on("click", function(d){
+          d3.select(".handedness_button")
+            .selectAll("div")
+            .transition()
+            .duration(500)
+            .style("color", "black")
+            .style("background", "rgb(213, 224, 241)");  //"rgb(251, 201, 127)"
+
+          d3.select(this)
+            .transition()
+            .duration(500)
+            .style("background", "rgb(213, 224, 241)")
+            .style("color", "white");
+          update(d);
+        });
+        // set the update function to update new dataset
+        function update(handedness) {
+          if (handedness == "Right hand") {
+            hand = "R";
+          }
+          else if (handedness == "Left hand") {
+            hand = "L";
+          }
+          else if (handedness == "Both hand") {
+            hand = "B";
+          }
+          else {
+            hand = "All";
+          }
+
+          function filtered(tmp_data){
+            return data.filter(function(d){
+              return d.handedness == tmp_data;
+          });}
+          if (hand == "All"){
+            draw_point(data);
+          }
+          else {
+            draw_point(filtered(hand));
+          }
+        }
+      }
+    </script>
+  </head>
+<body>
+  <script type="text/javascript">
+  d3.csv("baseball_data.csv",draw);
+  </script>
+</body>
+</html>
