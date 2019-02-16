@@ -12,4 +12,4 @@ By dividing the data into left and right hands sub dataset, the left-hand hittin
 ![image](Left_Hand.jpg)
 
 
-![image](Right_Hand.jpg)
+![image](Right_hand.jpg)
